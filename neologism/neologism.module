@@ -1157,10 +1157,9 @@ function &neologism_get_rdf_model($node) {
  * This function return the ADMS model of the current node vocabulary
  */
 function &neologism_get_rdf_model_in_ADMS($node) {
-  $required_namespaces = array($node->prefix, 'rdf', 'rdfs', 'dc', 'owl', 'foaf', 'xsd', 'vann',
+  $required_namespaces = array('rdf', 'rdfs', 'dc', 'owl', 'foaf', 'xsd', 'vann',
     'adms', 'rad', 'dcterms', 'vcard'
   );
-  
   // Set up model with all necessary namespaces
   $namespaces = rdf_get_namespaces();
   module_load_include('inc', 'neologism', 'neologism.rdfwriter');
@@ -1171,6 +1170,16 @@ function &neologism_get_rdf_model_in_ADMS($node) {
       $ns = $ns[0];
     }
     $rdf->register_namespace($prefix, $ns);
+  }
+
+  $result = db_query('SELECT * FROM {neologism_vocabulary}');
+  while ($vocab = db_fetch_object($result)) {
+	$rdf->register_namespace($vocab->prefix, _neologism_namespace_uri($vocab->prefix, $vocab->custom_namespace));
+  }
+
+  $result = db_query('SELECT * FROM {rdf_namespaces}');
+  while ($namespace = db_fetch_object($result)) {
+	$rdf->register_namespace($namespace->prefix, $namespace->uri);
   }
     
   // export the ontology
