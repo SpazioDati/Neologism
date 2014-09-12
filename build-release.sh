@@ -36,15 +36,18 @@ rm -rf sites/all/modules/ext/ext/src
 rm -rf sites/all/modules/ext/ext/test
 rm -rf sites/all/modules/ext/ext/welcome
 
-# Export Neologism and evoc modules from Google Code SVN
-echo "Getting neologism module from SVN ..."
-echo "Getting evoc module from SVN ..."
-svn export -q https://neologism.googlecode.com/svn/branches/drupal-6/neologism sites/all/modules/neologism
-svn export -q https://neologism.googlecode.com/svn/branches/drupal-6/evoc sites/all/modules/evoc
+# Export Neologism and evoc modules from spaziodati GIT
+echo "Getting neologism module from GIT ..."
+echo "Getting evoc module from GIT ..."
+git --git-dir ../../.git archive master neologism | tar -x -C sites/all/modules/
+git --git-dir ../../.git archive master evoc | tar -x -C sites/all/modules/
 
-# Check out Neologism installation profile from Google Code SVN
-echo "Getting installation profile from SVN ..."
-svn export -q https://neologism.googlecode.com/svn/branches/drupal-6/profile profiles/neologism
+# Check out Neologism installation profile from spaziodati GIT
+echo "Getting installation profile from GIT ..."
+mkdir profiles/neologism
+git --git-dir ../../.git archive master profile | tar -x -C profiles/neologism
+mv profiles/neologism/profile/* profiles/neologism
+rmdir profiles/neologism/profile
 
 # Delete the Drupal default installation profile, we only support the Neologism one
 echo "Deleting default installation profile ..."
