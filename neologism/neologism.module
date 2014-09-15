@@ -1032,7 +1032,7 @@ function neologism_add_term($type, $vocabulary) {
  *   $custom_uri The vocabulary's custom namespace URI, if any
  */
 function _neologism_namespace_uri($path, $custom_uri = null) {
-  return $node->namespace_uri = empty($custom_uri) ? url($path, array('absolute' => TRUE)) . '#' : $custom_uri;
+  return $node->namespace_uri = empty($custom_uri) ? str_replace("https://", "http://", url($path, array('absolute' => TRUE))) . '#' : $custom_uri;
 }
 
 /**
