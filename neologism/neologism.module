@@ -1032,7 +1032,7 @@ function neologism_add_term($type, $vocabulary) {
  *   $custom_uri The vocabulary's custom namespace URI, if any
  */
 function _neologism_namespace_uri($path, $custom_uri = null) {
-  return $node->namespace_uri = empty($custom_uri) ? str_replace("https://", "http://", url($path, array('absolute' => TRUE))) . '#' : $custom_uri;
+  return $node->namespace_uri = empty($custom_uri) ? _neologism_url($path, array('absolute' => TRUE)) . '#' : $custom_uri;
 }
 
 /**
@@ -1061,7 +1061,7 @@ function &neologism_get_rdf_model($node) {
   }
     
   // export the ontology
-  $doc = url($node->path, array('absolute' => true));
+  $doc = _neologism_url($node->path, array('absolute' => true));
   $rdf->triple_qname($doc, "rdf:type", 'owl:Ontology');
   $rdf->triple_literal($doc, "dc:title", $node->title);
   $rdf->triple_literal($doc, "dc:description", $node->abstract);
@@ -1147,7 +1147,7 @@ function &neologism_get_rdf_model($node) {
 		// content of that field will be parsed with a Turtle parser and loaded into the model that is used to 
 		// generate the Turtle or RDF/XML output. So the additional triples will show up when the model is 
 		// rendered.
-		$rdf->merge_turtle($node->custom_rdf, url($node->path, array('absolute' => TRUE)));
+		$rdf->merge_turtle($node->custom_rdf, _neologism_url($node->path, array('absolute' => TRUE)));
   }
   
   return $rdf;
@@ -1160,6 +1160,7 @@ function &neologism_get_rdf_model_in_ADMS($node) {
   $required_namespaces = array('rdf', 'rdfs', 'dc', 'owl', 'foaf', 'xsd', 'vann',
     'adms', 'rad', 'dcterms', 'vcard'
   );
+
   // Set up model with all necessary namespaces
   $namespaces = rdf_get_namespaces();
   module_load_include('inc', 'neologism', 'neologism.rdfwriter');
@@ -1174,12 +1175,12 @@ function &neologism_get_rdf_model_in_ADMS($node) {
 
   $result = db_query('SELECT * FROM {neologism_vocabulary}');
   while ($vocab = db_fetch_object($result)) {
-	$rdf->register_namespace($vocab->prefix, _neologism_namespace_uri($vocab->prefix, $vocab->custom_namespace));
+    $rdf->register_namespace($vocab->prefix, _neologism_namespace_uri($vocab->prefix, $vocab->custom_namespace));
   }
 
   $result = db_query('SELECT * FROM {rdf_namespaces}');
   while ($namespace = db_fetch_object($result)) {
-	$rdf->register_namespace($namespace->prefix, $namespace->uri);
+    $rdf->register_namespace($namespace->prefix, $namespace->uri);
   }
     
   // export the ontology
@@ -1235,15 +1236,19 @@ function &neologism_get_rdf_model_in_ADMS($node) {
     // content of that field will be parsed with a Turtle parser and loaded into the model that is used to 
     // generate the Turtle or RDF/XML output. So the additional triples will show up when the model is 
     // rendered.
-    $rdf->merge_turtle($node->custom_rdf, url($node->path, array('absolute' => TRUE)));
+    $rdf->merge_turtle($node->custom_rdf, _neologism_url($node->path, array('absolute' => TRUE)));
   }
   
   return $rdf;
 }
 
+function _neologism_url($path = NULL, array $options = array())	{
+  return preg_replace("/^https\:\/\//", "http://", url($path, $options));
+}
+
 function _neologism_append_rdf_vocab_description_in_ADMS(&$rdf, $node, $includeAuthors = TRUE) {
   // export the ontology
-  $doc = url($node->path, array('absolute' => true));
+  $doc = _neologism_url($node->path, array('absolute' => true));
   $rdf->triple_qname($doc, "rdf:type", 'owl:Ontology');
   $rdf->triple_qname($doc, "rdf:type", 'adms:SemanticAsset');
   $rdf->triple_literal($doc, "dcterms:title", $node->title);
@@ -2291,7 +2296,7 @@ function neologism_export_index_in_ADMS() {
     $rdf->register_namespace($prefix, $ns);
   }
 
-  $doc = url($base_url);
+  $doc = _neologism_url($base_url);
   $rdf->triple_qname($doc, "rdf:type", "adms:SemanticAssetRepository");
   $rdf->triple_literal($doc, "dcterms:title", variable_get("site_name",""));
   $rdf->triple_literal($doc, "dcterms:description", variable_get("site_mission", ""));
@@ -2309,7 +2314,7 @@ function neologism_export_index_in_ADMS() {
   // var_dump($result);
   while ($vocab = db_fetch_object($result)) {
 	$vocab_node = node_load($vocab->nid);
-	$rdf->triple_uri($doc, "dcterms:hasPart", url($vocab_node->path, array('absolute' => true)));
+	$rdf->triple_uri($doc, "dcterms:hasPart", _neologism_url($vocab_node->path, array('absolute' => true)));
 	// append the vocabulary description without authors and afilliation 
 	_neologism_append_rdf_vocab_description_in_ADMS($rdf, $vocab_node, FALSE);
   }
