@@ -214,7 +214,7 @@ function neologism_gateway_get_full_classes_tree() {
       }
       
       // create the node for the class 
-      _neologism_gateway_create_class_treenode(&$nodes, $node, $class, $disjointwith, $array_disjointwith, $array_references);
+      _neologism_gateway_create_class_treenode($nodes, $node, $class, $disjointwith, $array_disjointwith, $array_references);
     }
     
     // fetch all the external superclasses
